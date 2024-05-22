@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(uuid())
+  name String?// - para permitir que o nome seja nulo
+  email String @unique
+  password String
+  contact String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart Cart[]  
+  paymentLog PaymentLog[]
+  restaurant Restaurant[]
+}
+
+model Restaurant{
+  id String @id @default(uuid())
+  name String
+  latitude String
+  longitude String
+  contact String
+  email String
+  description String?
+  hallal Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  menuItem MenuItem[]
+
+  user   User @relation(fields: [userId], references: [id])
+  userId String
+
+}
+
+model MenuItem{
+  id String @id @default(uuid())
+  name String
+  description String?
+  category String
+  amount Decimal
+  time Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String
+
+  cart MenuOnCart[]
+
+}
+
+model PaymentLog{
+  id String @id @default(uuid())
+  phoneNumber String
+  amount Decimal
+  revertState Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart Cart @relation(fields: [cartId], references: [id])
+  cartId String
+
+  user   User @relation(fields: [userId], references: [id])
+  userId String
+}
+
+model Cart{
+  id String @id @default(uuid())
+  amount Decimal
+  revertState String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User @relation(fields: [userId], references: [id])
+  userId String
+
+  paymentLog PaymentLog[]
+
+    menuItem MenuOnCart[]
+
+}
+
+model MenuOnCart{
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId     String 
+  cart   Cart @relation(fields: [cartId], references: [id])
+  cartId String 
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@id([menuItemId, cartId])
+}
