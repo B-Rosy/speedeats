@@ -1,5 +1,8 @@
-import { User } from "@prisma/client";
 import { prismaClient } from "../utils/prisma_client";
+import { FastifyReply, FastifyRequest } from "fastify";
+import { z } from "zod";
+import { FileRepository } from "./fileRepository";
+
 
 interface IUser{
     id?: string;
@@ -7,6 +10,7 @@ interface IUser{
     email?: string;
     password?: string;
     contact?: string;
+    avatarId?:string
 };
 
 interface ICreateUser{
@@ -17,9 +21,14 @@ interface ICreateUser{
 }
 
 export class UserRepository{
+    fileRepository: FileRepository
+
+    constructor(){
+        this.fileRepository = new FileRepository()
+    }
 
     async  find({id, email}: IUser){
-        const user = await prismaClient.user.findUnique({where:{id}});
+        const user = await prismaClient.user.findUnique({where:{id,email}});
 
         return user;
     } 
@@ -32,10 +41,10 @@ export class UserRepository{
     }
 
 
-    async update({id, name, email, password, contact}: IUser){
+    async update({id, name, email, password,avatarId, contact}: IUser){
         const user = await prismaClient.user.update({
             where: {id, email},
-            data: { name, email, password, contact},
+            data: { name, email, password, contact, avatarId},
         });
 
         return user;
@@ -46,4 +55,6 @@ export class UserRepository{
 
         return deletedUser;
     }
+
+   
 };

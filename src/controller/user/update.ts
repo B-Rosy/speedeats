@@ -4,35 +4,39 @@ import { returnUser } from "../../utils/return_user";
 import { IUpdateUser } from "../../@types/app";
 import { UserRepository } from "../../repository/userRepository";
 import { prismaClient } from "../../utils/prisma_client";
+import { string, z } from "zod";
+import { AppErrors } from "../../errors/appErrors";
 
 
 export async function update (request: FastifyRequest, reply: FastifyReply) {
-
-    const { name, email, newPassword, password, contact} = request.body as IUpdateUser;
-
     const id = request.userId;
+
+    const BodySchema = z.object({ 
+        name: z.string().optional(),
+        email: z.string().optional(), 
+        contact: z.string().optional(),
+        newPassword: z.string().optional(),
+        password: z.string().optional()
+    });
+
+    const { name, email, newPassword, password, contact} = BodySchema.parse(request.body);
+
 
     const userRepo = new UserRepository()
     
         try {
+            if (!id) throw new AppErrors("Error on authentication!");
             
-            if(!request.headers.authorization) throw new Error("Token not found");
-    
             const user = await userRepo.find({id});
-    
-            const splited = request.headers.authorization.split(" ");
-            console.log(splited)
-    
-            if (!id) throw new Error("Error on authentication!");
-    
-            if (!user) throw new Error("Error on authentication!");
+       
+            if (!user) throw new AppErrors("Error on authentication!");
     
             if(newPassword || email){
-                if(!password) throw new Error("Please, send the old password!");
+                if(!password) throw new AppErrors("Please, send the old password!");
                
-                const match = await Bcrypt.compareSync(password, user.password)
+                const match = Bcrypt.compareSync(password, user.password)
     
-                if (!match) throw new Error("Old password is incorrect!");
+                if (!match) throw new AppErrors("Old password is incorrect!");
                 
             }
     

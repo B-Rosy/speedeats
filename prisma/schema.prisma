@@ -16,12 +16,27 @@ model User {
   email String @unique
   password String
   contact String
+  avatarId String? @map("avatar_id")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  avatar File? @relation(fields: [avatarId], references: [id])
+
 
   cart Cart[]  
   paymentLog PaymentLog[]
   restaurant Restaurant[]
+}
+
+model File{
+  id String @id @default(uuid())
+  filename String @unique
+  originalname String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  User User[]
+
+  @@map("files")
 }
 
 model Restaurant{

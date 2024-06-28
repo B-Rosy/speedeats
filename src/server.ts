@@ -10,7 +10,7 @@ fastify.register(routes, {prefix:"/api/v1"});
 
 
 fastify.listen({ port: 3000 }, (err, address) => {
-    // if (err) throw err;
+    if (err) throw err;
         console.log("Server is now listening on 3000");
  });
 

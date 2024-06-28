@@ -1,7 +1,7 @@
 import {string, z} from "zod";
 import { PrismaClient, Restaurant } from "@prisma/client";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { prismaClient } from "../../utils/prisma_client";
+import { AppErrors } from "../../errors/appErrors";
 
 export async function create (request:FastifyRequest, reply:FastifyReply){
     const{name, email, description, hallal, contact,  latitude, longitude,} = request.body as Restaurant
@@ -10,7 +10,7 @@ export async function create (request:FastifyRequest, reply:FastifyReply){
 
     const mySchema = z.object({
         name:z.string(),
-        email:z.string().email(""),
+        email:z.string().email(),
         description:z.string().nullable(),
         hallal:z.boolean(),
         contact:z.string(),
@@ -20,7 +20,7 @@ export async function create (request:FastifyRequest, reply:FastifyReply){
 
     mySchema.parse(request.body);
 
-    if(!userId)throw new Error("Authetication error!");
+    if(!userId)throw new AppErrors("Authentication error!", 401);
 
     const prismaClient = new PrismaClient();
 
@@ -36,5 +36,7 @@ export async function create (request:FastifyRequest, reply:FastifyReply){
             user:{connect:{id: userId}}
         }
     });
+
+    reply.send({message:"OK", restaurant})
 
 };
